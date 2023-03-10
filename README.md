@@ -18,7 +18,8 @@ A Node.js script that migrates Shopify Metafield definitions from a source store
 
 The script will migrate the metafield definitions defined in the `OWNER_TYPES` array from the source store to the destination store. It will skip existing metafield definitions.
 
-## Limitations
+## Limitations & Considerations
 
-- The script only migrates metafield _definitions_. It does not migrate the _values_ of the metafields.
+- The script only migrates metafield _definitions_. It does not migrate any metafield values. Use [Matrixify](https://matrixify.app/) instead to migrate resources with corresponding metafield values.
 - The script does not handle errors caused by invalid credentials, network issues, or other issues with the Shopify API.
+- Tested on Node.js v16.15.1
