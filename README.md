@@ -12,7 +12,9 @@ A Node.js script that migrates Shopify Metafield definitions from a source store
 
 4.  Replace the STORE, SHOPIFY_TOKEN and SHOPIY_API_VER constants for the source and destination store inside the migrate.js file.
 
-5.  Run the script using the command `npm start`.
+5.  Specify the resources for which you want to migrate the metafield definitions by modifying the OWNER_TYPES array. Defaults to all.
+
+6.  Run the script using the command `npm start`.
 
 ## Usage
 
