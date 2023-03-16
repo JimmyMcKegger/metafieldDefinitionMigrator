@@ -35,49 +35,33 @@ const DESTINATION = {
   SHOPIFY_API_VER: "2023-01",
 };
 
-const querySource = async (query, variables) => {
-  const response = await axios({
-    url: `https://${SOURCE.STORE}/admin/api/${SOURCE.SHOPIFY_API_VER}/graphql.json`,
-    method: "POST",
-    headers: {
-      "X-Shopify-Access-Token": SOURCE.SHOPIFY_TOKEN,
-      Accept: "application/json",
-    },
-    data: {
-      query,
-      variables,
-    },
-  });
-  if (response.error) {
-    console.error(response.error);
-    throw new Error("Error accessing graphql");
+const queryShopify = async (store, query, variables) => {
+  try {
+    const response = await axios({
+      url: `https://${store.STORE}/admin/api/${store.SHOPIFY_API_VER}/graphql.json`,
+      method: "POST",
+      headers: {
+        "X-Shopify-Access-Token": store.SHOPIFY_TOKEN,
+        Accept: "application/json",
+      },
+      data: {
+        query,
+        variables,
+      },
+    });
+    if (response.error) {
+      throw new Error("Error accessing graphql");
+    }
+    return response.data.data;
+  } catch (error) {
+    throw new Error(`Error querying ${store.STORE}: ${error.message}`);
   }
-
-  return response.data.data;
-};
-
-const queryDestination = async (query, variables) => {
-  const response = await axios({
-    url: `https://${DESTINATION.STORE}/admin/api/${DESTINATION.SHOPIFY_API_VER}/graphql.json`,
-    method: "POST",
-    headers: {
-      "X-Shopify-Access-Token": DESTINATION.SHOPIFY_TOKEN,
-      Accept: "application/json",
-    },
-    data: {
-      query,
-      variables,
-    },
-  });
-  if (response.error) {
-    console.error(response.error);
-    throw new Error("Error accessing graphql");
-  }
-  return response.data.data;
 };
 
 OWNER_TYPES.forEach(async (OWNER_TYPE) => {
-  const queryResponse = await querySource(`
+  const queryResponse = await queryShopify(
+    SOURCE,
+    `
   {
     metafieldDefinitions(first: 20, ownerType: ${OWNER_TYPE}) {
       edges {
@@ -99,7 +83,8 @@ OWNER_TYPES.forEach(async (OWNER_TYPE) => {
       }
     }
   }
-`);
+`
+  );
   if (!queryResponse?.metafieldDefinitions?.edges?.length > 0) {
     console.log(
       `Error fetching metafield definitions for owner type: ${OWNER_TYPE}`
@@ -111,7 +96,8 @@ OWNER_TYPES.forEach(async (OWNER_TYPE) => {
   );
 
   metafieldDefinitions.forEach(async (definition) => {
-    const creationResponse = await queryDestination(
+    const creationResponse = await queryShopify(
+      DESTINATION,
       `
   mutation metafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
     metafieldDefinitionCreate(definition: $definition) {
