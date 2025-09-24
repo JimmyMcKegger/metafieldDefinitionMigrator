@@ -1,38 +1,53 @@
 import axios from "axios";
+import dotenv from "dotenv";
+
+// Load environment variables from .env file
+dotenv.config();
 
 // Setup the type of resources for which you want to migrate the metafield defintions. Defaults to all.
-// More information: https://shopify.dev/docs/api/admin-graphql/2023-01/enums/MetafieldOwnerType
+// More information: https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType
 
 const OWNER_TYPES = [
-  "ARTICLE",
-  "BLOG",
-  "COLLECTION",
-  "CUSTOMER",
+  "API_PERMISSION",
   "COMPANY",
   "COMPANY_LOCATION",
+  "PAYMENT_CUSTOMIZATION",
+  "VALIDATION",
+  "CUSTOMER",
+  "DELIVERY_CUSTOMIZATION",
   "DRAFTORDER",
-  "LOCATION",
-  "ORDER",
-  "PAGE",
+  "GIFT_CARD_TRANSACTION",
+  "MARKET",
+  "CARTTRANSFORM",
+  "COLLECTION",
+  "MEDIA_IMAGE",
   "PRODUCT",
-  "PRODUCTIMAGE",
   "PRODUCTVARIANT",
-  "SHOP",
+  "SELLING_PLAN",
+  "ARTICLE",
+  "BLOG",
+  "PAGE",
+  "FULFILLMENT_CONSTRAINT_RULE",
+  "ORDER_ROUTING_LOCATION_RULE",
+  "DISCOUNT",
+  "ORDER",
+  "LOCATION",
+  "SHOP"
 ];
 
 // Setup a custom app inside the Shopify Admin Dashboard for the source and destination store. Grant the app the permission to read and write metafield/metaobject definitions and grant write access to all affected resources.
 // More information: https://help.shopify.com/en/manual/apps/app-types/custom-apps
 
 const SOURCE = {
-  STORE: "source.myshopify.com",
-  SHOPIFY_TOKEN: "",
-  SHOPIFY_API_VER: "2023-01",
+  STORE: process.env.ORIGIN_STORE,
+  SHOPIFY_TOKEN: process.env.ORIGIN_API_TOKEN,
+  SHOPIFY_API_VER: process.env.API_VERSION,
 };
 
 const DESTINATION = {
-  STORE: "destination.myshopify.com",
-  SHOPIFY_TOKEN: "",
-  SHOPIFY_API_VER: "2023-01",
+  STORE: process.env.DESTINATION_STORE,
+  SHOPIFY_TOKEN: process.env.DESTINATION_API_TOKEN,
+  SHOPIFY_API_VER: process.env.API_VERSION,
 };
 
 const queryShopify = async (store, query, variables) => {
@@ -42,7 +57,7 @@ const queryShopify = async (store, query, variables) => {
       method: "POST",
       headers: {
         "X-Shopify-Access-Token": store.SHOPIFY_TOKEN,
-        Accept: "application/json",
+        ContentType: "application/json",
       },
       data: {
         query,
@@ -63,7 +78,7 @@ OWNER_TYPES.forEach(async (OWNER_TYPE) => {
     SOURCE,
     `
   {
-    metafieldDefinitions(first: 20, ownerType: ${OWNER_TYPE}) {
+    metafieldDefinitions(first: 250, ownerType: ${OWNER_TYPE}) {
       edges {
         node {
           name
